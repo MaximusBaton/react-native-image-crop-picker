@@ -10,6 +10,7 @@ import android.util.Log;
 
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReadableMap;
+import com.facebook.react.bridge.ReactApplicationContext;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -26,7 +27,7 @@ import java.util.UUID;
 
 class Compression {
 
-    File resize(String originalImagePath, int maxWidth, int maxHeight, int quality) throws IOException {
+    File resize(String originalImagePath, int maxWidth, int maxHeight, int quality, ReactApplicationContext reactContext) throws IOException {
         Bitmap original = BitmapFactory.decodeFile(originalImagePath);
 
         int width = original.getWidth();
@@ -55,7 +56,7 @@ class Compression {
         Bitmap resized = Bitmap.createScaledBitmap(original, finalWidth, finalHeight, true);
         resized = Bitmap.createBitmap(resized, 0, 0, finalWidth, finalHeight, rotationMatrix, true);
         
-        File imageDirectory = Environment.getExternalStoragePublicDirectory(
+        File imageDirectory = reactContext.getExternalFilesDir(
                 Environment.DIRECTORY_PICTURES);
 
         if(!imageDirectory.exists()) {
@@ -88,7 +89,7 @@ class Compression {
         }
     }
 
-    File compressImage(final ReadableMap options, final String originalImagePath, final BitmapFactory.Options bitmapOptions) throws IOException {
+    File compressImage(final ReadableMap options, final String originalImagePath, final BitmapFactory.Options bitmapOptions, ReactApplicationContext reactContext) throws IOException {
         Integer maxWidth = options.hasKey("compressImageMaxWidth") ? options.getInt("compressImageMaxWidth") : null;
         Integer maxHeight = options.hasKey("compressImageMaxHeight") ? options.getInt("compressImageMaxHeight") : null;
         Double quality = options.hasKey("compressImageQuality") ? options.getDouble("compressImageQuality") : null;
@@ -123,7 +124,7 @@ class Compression {
             maxHeight = Math.min(maxHeight, bitmapOptions.outHeight);
         }
 
-        return resize(originalImagePath, maxWidth, maxHeight, targetQuality);
+        return resize(originalImagePath, maxWidth, maxHeight, targetQuality, reactContext);
     }
 
     synchronized void compressVideo(final Activity activity, final ReadableMap options, final String originalVideo, final String compressedVideo, final Promise promise) {
